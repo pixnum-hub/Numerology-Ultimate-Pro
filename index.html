@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Numerology Ultimate Pro</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#020617">
+
+<style>
+:root{
+ --bg:#020617;
+ --card:rgba(30,41,59,0.6);
+ --text:#fff;
+ --glass:rgba(255,255,255,0.08);
+ --border:rgba(255,255,255,0.15);
+}
+
+body{
+ font-family:Arial;
+ background:var(--bg);
+ color:var(--text);
+ display:flex;
+ justify-content:center;
+ align-items:center;
+ min-height:100vh;
+ margin:0;
+}
+
+.container{
+ width:100%;
+ max-width:700px;
+ backdrop-filter:blur(20px);
+ background:var(--glass);
+ border:1px solid var(--border);
+ border-radius:20px;
+ padding:20px;
+ box-shadow:0 10px 40px rgba(0,0,0,0.5);
+}
+
+h2{text-align:center;margin-bottom:10px}
+
+.row{
+ display:grid;
+ grid-template-columns:1fr 1fr;
+ gap:10px;
+}
+
+.full{grid-column:1/-1}
+
+input,select,button{
+ width:100%;
+ padding:12px;
+ border-radius:12px;
+ border:1px solid var(--border);
+ background:rgba(255,255,255,0.05);
+ color:#fff;
+ outline:none;
+}
+
+button{
+ background:#22c55e;
+ color:#000;
+ font-weight:bold;
+ cursor:pointer;
+}
+
+.card{
+ background:var(--card);
+ margin-top:10px;
+ padding:14px;
+ border-radius:14px;
+ backdrop-filter:blur(10px);
+}
+
+.grid{
+ display:grid;
+ grid-template-columns:repeat(3,1fr);
+ gap:5px;
+ margin-top:10px;
+}
+
+.cell{
+ background:rgba(0,0,0,0.4);
+ padding:10px;
+ border-radius:8px;
+ text-align:center;
+}
+
+.footer{
+ text-align:center;
+ margin-top:15px;
+ font-size:12px;
+ opacity:.7;
+}
+
+.light{--bg:#f8fafc;--card:rgba(255,255,255,0.7);--text:#000}
+.oled{--bg:#000;--card:rgba(10,10,10,0.8);--text:#00ffcc}
+.hc{--bg:#000;--card:#000;--text:#ff0}
+</style>
+</head>
+<body>
+<div class="container">
+<h2>🔮 Numerology Ultimate Pro</h2>
+
+<div class="row">
+<select id="system" class="full">
+<option value="all">All Systems</option>
+<option value="pythagoras">Pythagoras</option>
+<option value="chaldean">Chaldean</option>
+<option value="kabbalah">Kabbalah</option>
+<option value="vedic">Vedic</option>
+</select>
+
+<input id="name" placeholder="Name / Number / Mixed" class="full">
+
+<input id="business" placeholder="Business Name">
+<input id="mobile" placeholder="Mobile Number">
+
+<input id="name2" placeholder="Second Person">
+<input type="date" id="dob">
+
+<button onclick="run()" class="full">Generate Full Report</button>
+<button onclick="downloadPDF()" class="full">Export PDF</button>
+</div>
+
+<div id="out"></div>
+<div class="footer" id="footer"></div>
+</div>
+
+<script>
+// (ALL PREVIOUS LOGIC KEPT SAME)
+const systems={pythagoras:{A:1,B:2,C:3,D:4,E:5,F:6,G:7,H:8,I:9,J:1,K:2,L:3,M:4,N:5,O:6,P:7,Q:8,R:9,S:1,T:2,U:3,V:4,W:5,X:6,Y:7,Z:8},chaldean:{A:1,B:2,C:3,D:4,E:5,F:8,G:3,H:5,I:1,J:1,K:2,L:3,M:4,N:5,O:7,P:8,Q:1,R:2,S:3,T:4,U:6,V:6,W:6,X:5,Y:1,Z:7},kabbalah:{A:1,B:2,C:3,D:4,E:5,F:6,G:7,H:8,I:9,J:10,K:20,L:30,M:40,N:50,O:60,P:70,Q:80,R:90,S:100,T:200,U:300,V:400,W:500,X:600,Y:700,Z:800},vedic:{A:1,B:2,C:3,D:4,E:5,F:6,G:7,H:8,I:9,J:1,K:2,L:3,M:4,N:5,O:6,P:7,Q:8,R:9,S:1,T:2,U:3,V:4,W:5,X:6,Y:7,Z:8}};
+const vowels='AEIOU';
+function reduce(n){while(n>9 && ![11,22,33].includes(n)){n=n.toString().split('').reduce((a,b)=>a+ +b,0)}return n}
+function clean(s){return s.toUpperCase().replace(/[^A-Z0-9]/g,'')}
+function calc(input,map){let t=0;input=clean(input);for(let c of input){if(map[c])t+=map[c];else if(!isNaN(c))t+=+c}return {compound:t,single:reduce(t)}}
+function lifePath(d){if(!d)return null;return reduce(d.replaceAll('-','').split('').reduce((a,b)=>a+ +b,0))}
+function soul(name,map){let t=0;for(let c of clean(name)){if(vowels.includes(c)&&map[c])t+=map[c]}return reduce(t)}
+function personality(name,map){let t=0;for(let c of clean(name)){if(!vowels.includes(c)&&map[c])t+=map[c]}return reduce(t)}
+function mobileNum(n){return reduce(n.split('').reduce((a,b)=>a+ +b,0))}
+function businessNum(n,map){return calc(n,map).single}
+function lucky(){return Math.floor(Math.random()*9)+1}
+function loShu(name,dob,map){let d=[];clean(name).split('').forEach(c=>{if(map[c])d.push(map[c]);else if(!isNaN(c))d.push(+c)});if(dob)dob.replaceAll('-','').split('').forEach(x=>d.push(+x));let g={1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0};d.forEach(n=>{if(g[n]!=undefined)g[n]++});return g}
+function drawGrid(g){let o=[4,9,2,3,5,7,8,1,6],h="<div class='grid'>";o.forEach(n=>h+=`<div class='cell'>${n}<br>${g[n]}</div>`);return h+'</div>'}
+const singleMeanings={1:"Leadership, independence",2:"Balance, partnership",3:"Creativity, expression",4:"Stability, discipline",5:"Freedom, change",6:"Responsibility, care",7:"Spirituality, analysis",8:"Power, success",9:"Compassion, completion",11:"Master intuition",22:"Master builder",33:"Master teacher"};
+
+function ai(num){return `You carry the energy of ${num}. ${singleMeanings[num]||"Unique vibration"}. This shapes your personality and life path.`}
+
+function compoundMeaning(n){
+ if([13,14,16,19].includes(n)) return "Karmic lesson number";
+ if(n>9) return "Compound number with layered influences";
+ return "";
+}
+function next12(n){let m=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],r="";m.forEach((v,i)=>r+=`${v}: ${reduce(n+i)}<br>`);return r}
+
+function run(){
+let name=document.getElementById('name').value.trim();
+let system=document.getElementById('system').value;
+let dob=document.getElementById('dob').value;
+let business=document.getElementById('business').value;
+let mobile=document.getElementById('mobile').value;
+let name2=document.getElementById('name2').value;
+if(!name){alert('Enter input');return}
+
+let html='';
+let lp=lifePath(dob);
+if(lp) html+=`<div class='card'><b>Life Path:</b> ${lp}</div>`;
+
+let keys=(system==='all')?Object.keys(systems):[system];
+keys.forEach(k=>{
+ let r=calc(name,systems[k]);
+ let sou=soul(name,systems[k]);
+ let per=personality(name,systems[k]);
+ let grid=loShu(name,dob,systems[k]);
+ html+=`<div class='card'><b>${k.toUpperCase()}</b><br>
+ Compound: ${r.compound} (${compoundMeaning(r.compound)})<br>
+ Single: ${r.single} (${singleMeanings[r.single]||""})<br>
+ Soul: ${sou}<br>
+ Personality: ${per}<br>
+ ${ai(r.single)}<br>
+ <b>Lo Shu:</b>${drawGrid(grid)}
+ <b>Missing:</b> ${Object.keys(grid).filter(n=>grid[n]==0).join(',')||'None'}<br>
+ <b>Repeated:</b> ${Object.keys(grid).filter(n=>grid[n]>1).map(n=>n+'x'+grid[n]).join(',')||'None'}
+ </div>`;
+});
+
+if(mobile) html+=`<div class='card'><b>Mobile:</b> ${mobileNum(mobile)}</div>`;
+if(business) html+=`<div class='card'><b>Business:</b> ${businessNum(business,systems.pythagoras)}</div>`;
+html+=`<div class='card'><b>Lucky Number:</b> ${lucky()}</div>`;
+html+=`<div class='card'><b>Next 12 Months:</b><br>${next12(reduce(name.length))}</div>`;
+
+if(name2){let c=100-Math.abs(name.length-name2.length)*11;html+=`<div class='card'><b>Compatibility:</b> ${c}%</div>`}
+
+document.getElementById('out').innerHTML=html;
+}
+
+function downloadPDF(){let w=window.open('');w.document.write(document.getElementById('out').innerHTML+`<hr><center>© Manik Roy ${new Date().getFullYear()}</center>`);w.print()}
+
+document.getElementById('footer').innerHTML=`© Manik Roy ${new Date().getFullYear()}. All Rights Reserved.`;
+</script>
+</body>
+</html>
