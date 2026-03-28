@@ -8,8 +8,6 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-
-/* ===== GLOBAL FIX ===== */
 *{box-sizing:border-box;}
 
 body{
@@ -24,20 +22,15 @@ body{
  overflow-x:hidden;
 }
 
-/* ===== FRAME ===== */
 .frame{
  width:100%;
- max-width:100%;
  margin:10px;
- padding:10px;
- border-radius:20px;
- border:1px solid rgba(255,255,255,.15);
 }
 
-/* ===== CONTAINER ===== */
 .container{
  width:100%;
- max-width:100%;
+ max-width:720px;
+ margin:auto;
  padding:15px;
  border-radius:15px;
  background:rgba(255,255,255,.05);
@@ -46,7 +39,12 @@ body{
  align-items:center;
 }
 
-/* ===== GRID ===== */
+h2{
+ text-align:center;
+ width:100%;
+}
+
+/* GRID */
 .form-grid{
  width:100%;
  display:grid;
@@ -63,7 +61,7 @@ body{
  }
 }
 
-/* ===== INPUTS ===== */
+/* INPUTS */
 input,select,button{
  width:100%;
  height:50px;
@@ -81,7 +79,7 @@ button{
  cursor:pointer;
 }
 
-/* ===== CARDS ===== */
+/* CARDS */
 .card{
  width:100%;
  margin-top:10px;
@@ -89,19 +87,16 @@ button{
  background:#0f172a;
  border-radius:10px;
  word-wrap:break-word;
- overflow-wrap:break-word;
  font-size:14px;
  line-height:1.5;
 }
 
-/* ===== CHART ===== */
+/* CHART */
 canvas{
  width:100% !important;
- max-width:100%;
  height:200px !important;
  margin-top:10px;
 }
-
 </style>
 </head>
 
@@ -113,8 +108,17 @@ canvas{
 <h2>🔮 Numerology AI Elite</h2>
 
 <div class="form-grid">
+
 <input id="name" placeholder="Name / Number / Mixed">
 <input type="date" id="dob">
+
+<select id="system">
+<option value="pythagoras">Pythagoras</option>
+<option value="chaldean">Chaldean</option>
+<option value="kabbalah">Kabbalah</option>
+<option value="vedic">Vedic</option>
+<option value="all">All Systems</option>
+</select>
 
 <select id="style">
 <option value="spiritual">Spiritual AI</option>
@@ -123,6 +127,7 @@ canvas{
 </select>
 
 <button onclick="run()">Generate Full Report</button>
+
 </div>
 
 <div id="out"></div>
@@ -133,11 +138,33 @@ canvas{
 
 <script>
 
-// ===== MAP =====
-const map = {
+// ===== SYSTEMS =====
+const systems = {
+
+pythagoras:{
 A:1,B:2,C:3,D:4,E:5,F:6,G:7,H:8,I:9,
 J:1,K:2,L:3,M:4,N:5,O:6,P:7,Q:8,R:9,
 S:1,T:2,U:3,V:4,W:5,X:6,Y:7,Z:8
+},
+
+chaldean:{
+A:1,B:2,C:3,D:4,E:5,F:8,G:3,H:5,I:1,
+J:1,K:2,L:3,M:4,N:5,O:7,P:8,Q:1,R:2,
+S:3,T:4,U:6,V:6,W:6,X:5,Y:1,Z:7
+},
+
+kabbalah:{
+A:1,B:2,C:3,D:4,E:5,F:6,G:7,H:8,I:9,
+J:10,K:20,L:30,M:40,N:50,O:60,P:70,Q:80,R:90,
+S:100,T:200,U:300,V:400,W:500,X:600,Y:700,Z:800
+},
+
+vedic:{
+A:1,B:2,C:3,D:4,E:5,F:6,G:7,H:8,I:9,
+J:1,K:2,L:3,M:4,N:5,O:6,P:7,Q:8,R:9,
+S:1,T:2,U:3,V:4,W:5,X:6,Y:7,Z:8
+}
+
 };
 
 const meanings = {
@@ -149,7 +176,7 @@ const meanings = {
 // ===== CORE =====
 function reduce(n){
  while(n>9 && ![11,22,33].includes(n)){
-  n = n.toString().split('').reduce((a,b)=>a+ +b,0);
+  n=n.toString().split('').reduce((a,b)=>a+ +b,0);
  }
  return n;
 }
@@ -158,12 +185,15 @@ function clean(s){
  return s.toUpperCase().replace(/[^A-Z0-9]/g,'');
 }
 
-function calc(input){
- let total = 0;
+function calc(input, system){
+ let total=0;
+ let map=systems[system];
+
  for(let c of clean(input)){
-  if(map[c]) total += map[c];
-  else if(!isNaN(c)) total += Number(c);
+  if(map[c]) total+=map[c];
+  else if(!isNaN(c)) total+=Number(c);
  }
+
  return {compound:total,single:reduce(total)};
 }
 
@@ -181,47 +211,29 @@ function lifePath(d){
 function personalYear(d){
  if(!d) return null;
  let [y,m,da]=d.split('-');
- let cy = new Date().getFullYear();
- return reduce(
-  reduce(+m) +
-  reduce(+da) +
-  reduce([...cy.toString()].reduce((a,b)=>a+ +b,0))
- );
+ let cy=new Date().getFullYear();
+ return reduce(reduce(+m)+reduce(+da)+reduce([...cy.toString()].reduce((a,b)=>a+ +b,0)));
 }
 
-function personalMonth(py){
- return reduce(py + (new Date().getMonth()+1));
-}
-
-function personalDay(pm){
- return reduce(pm + new Date().getDate());
-}
+function personalMonth(py){return reduce(py+(new Date().getMonth()+1));}
+function personalDay(pm){return reduce(pm+new Date().getDate());}
 
 // ===== ELITE =====
 function pinnacle(d){
  if(!d) return null;
  let [y,m,da]=d.split('-');
-
  let mR=reduce([...m].reduce((a,b)=>a+ +b,0));
  let dR=reduce([...da].reduce((a,b)=>a+ +b,0));
  let yR=reduce([...y].reduce((a,b)=>a+ +b,0));
-
- return [
-  reduce(mR+dR),
-  reduce(dR+yR),
-  reduce(mR+yR),
-  reduce(mR+dR+yR)
- ];
+ return [reduce(mR+dR),reduce(dR+yR),reduce(mR+yR),reduce(mR+dR+yR)];
 }
 
 function challenge(d){
  if(!d) return null;
  let [y,m,da]=d.split('-');
-
  let mR=reduce([...m].reduce((a,b)=>a+ +b,0));
  let dR=reduce([...da].reduce((a,b)=>a+ +b,0));
  let yR=reduce([...y].reduce((a,b)=>a+ +b,0));
-
  return [
   Math.abs(mR-dR),
   Math.abs(dR-yR),
@@ -263,67 +275,65 @@ function predictions(num){
 // ===== MAIN =====
 function run(){
 
-let name = document.getElementById("name").value.trim();
-let dob = document.getElementById("dob").value;
-let style = document.getElementById("style").value;
+let name=document.getElementById("name").value.trim();
+let dob=document.getElementById("dob").value;
+let system=document.getElementById("system").value;
+let style=document.getElementById("style").value;
 
-if(!name){
- alert("Enter Name or Number");
- return;
+if(!name) return alert("Enter Name or Number");
+
+let html="";
+let main=0;
+
+// SYSTEM CALC
+if(system==="all"){
+ for(let key in systems){
+  let r=calc(name,key);
+  main=r.single;
+  html+=`<div class='card'><b>${key}</b><br>
+  Compound: ${r.compound}<br>
+  Single: ${r.single}</div>`;
+ }
+}else{
+ let r=calc(name,system);
+ main=r.single;
+ html+=`<div class='card'><b>${system}</b><br>
+ Compound: ${r.compound}<br>
+ Single: ${r.single}</div>`;
 }
 
-let r = calc(name);
-let main = r.single;
+// DOB
+let lp=dob?lifePath(dob):null;
+let py=dob?personalYear(dob):null;
+let pm=py?personalMonth(py):null;
+let pd=pm?personalDay(pm):null;
+let pin=dob?pinnacle(dob):[];
+let chal=dob?challenge(dob):[];
 
-// SAFE HANDLING
-let lp = dob ? lifePath(dob) : null;
-let py = dob ? personalYear(dob) : null;
-let pm = py ? personalMonth(py) : null;
-let pd = pm ? personalDay(pm) : null;
-let pin = dob ? pinnacle(dob) : [];
-let chal = dob ? challenge(dob) : [];
+if(lp) html+=`<div class='card'>Life Path: ${lp}</div>`;
+if(py) html+=`<div class='card'>Year: ${py}<br>Month: ${pm}<br>Day: ${pd}</div>`;
+if(pin.length) html+=`<div class='card'>Pinnacles: ${pin.join(', ')}</div>`;
+if(chal.length) html+=`<div class='card'>Challenges: ${chal.join(', ')}</div>`;
 
-let html = "";
+html+=`<div class='card'>Lucky Dates: ${lucky(main)}</div>`;
 
-// OUTPUT
-html += `<div class='card'><b>Main Number:</b> ${main}</div>`;
+// AI
+let ai=aiReport(lp||main,py||main,pm||main,pd||main,pin,chal,style);
+let p=predictions(main);
 
-if(lp) html += `<div class='card'>Life Path: ${lp}</div>`;
-
-if(py){
- html += `<div class='card'>Year: ${py}<br>Month: ${pm}<br>Day: ${pd}</div>`;
-}
-
-if(pin.length){
- html += `<div class='card'>Pinnacles: ${pin.join(', ')}</div>`;
-}
-
-if(chal.length){
- html += `<div class='card'>Challenges: ${chal.join(', ')}</div>`;
-}
-
-html += `<div class='card'>Lucky Dates: ${lucky(main)}</div>`;
-
-// AI + Predictions
-let ai = aiReport(lp || main, py || main, pm || main, pd || main, pin, chal, style);
-let p = predictions(main);
-
-html += `<div class='card'><b>AI (${style})</b><br>${ai}</div>`;
-html += `<div class='card'><b>Love ❤️</b><br>${p.love}</div>`;
-html += `<div class='card'><b>Career 💼</b><br>${p.career}</div>`;
-html += `<div class='card'><b>Money 💰</b><br>${p.money}</div>`;
+html+=`<div class='card'><b>AI (${style})</b><br>${ai}</div>`;
+html+=`<div class='card'><b>Love ❤️</b><br>${p.love}</div>`;
+html+=`<div class='card'><b>Career 💼</b><br>${p.career}</div>`;
+html+=`<div class='card'><b>Money 💰</b><br>${p.money}</div>`;
 
 // RENDER
-document.getElementById("out").innerHTML = html;
+document.getElementById("out").innerHTML=html;
 
-// SAFE CHART
+// CHART
 try{
  new Chart(document.getElementById("chart"),{
   type:'bar',
-  data:{
-   labels:['Energy'],
-   datasets:[{data:[main]}]
-  }
+  data:{labels:['Energy'],datasets:[{data:[main]}]}
  });
 }catch(e){}
 
